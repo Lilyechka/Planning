@@ -3,9 +3,11 @@ package com.liliia.Controllers;
 import com.liliia.model.Task;
 import com.liliia.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/tasks")
@@ -15,27 +17,40 @@ public class TaskController {
     private TaskService taskService;
 
     @GetMapping
-    public List<Task> getAllTasks() {
-        return taskService.getAllTasks();
+    public ResponseEntity<List<Task>> getTasks() {
+        List<Task> tasks = taskService.getAllTasks();
+        return ResponseEntity.ok(tasks);
     }
 
-    @GetMapping("/{id}")
-    public Task getTaskById(@PathVariable Long id) {
-        return taskService.getTaskById(id);
+    @GetMapping("/{taskId}")
+    public ResponseEntity<Task> getTask(@PathVariable Long taskId) {
+        Task task = taskService.getTaskById(taskId);
+        return ResponseEntity.ok(task);
     }
 
     @PostMapping
-    public Task createTask(@RequestBody Task task) {
-        return taskService.createTask(task);
+    public ResponseEntity<Task> createTask(@RequestBody Map<String, String> taskDetails) {
+        Task task = new Task();
+        task.setTitle(taskDetails.get("title"));
+        task.setDescription(taskDetails.get("description"));
+        task.setStatus(taskDetails.get("status"));
+        Task createdTask = taskService.createTask(task);
+        return ResponseEntity.ok(createdTask);
     }
 
-    @PutMapping("/{id}")
-    public Task updateTask(@PathVariable Long id, @RequestBody Task taskDetails) {
-        return taskService.updateTask(id, taskDetails);
+    @PutMapping("/{taskId}")
+    public ResponseEntity<Task> updateTask(@PathVariable Long taskId, @RequestBody Map<String, String> taskDetails) {
+        Task task = new Task();
+        task.setTitle(taskDetails.get("title"));
+        task.setDescription(taskDetails.get("description"));
+        task.setStatus(taskDetails.get("status"));
+        Task updatedTask = taskService.updateTask(taskId, task);
+        return ResponseEntity.ok(updatedTask);
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteTask(@PathVariable Long id) {
-        taskService.deleteTask(id);
+    @DeleteMapping("/{taskId}")
+    public ResponseEntity<Void> deleteTask(@PathVariable Long taskId) {
+        taskService.deleteTask(taskId);
+        return ResponseEntity.noContent().build();
     }
 }

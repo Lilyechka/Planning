@@ -1,86 +1,102 @@
 package com.liliia.model;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Entity
-@Table(name = "tasks")
+@Table (name = "tasks")
 public class Task {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_task")
-    private Long id;
+    private Integer id_task;
 
-    @Column(name = "id_user")
-    private Long userId;
-
-    @Column(name = "topic")
+    @Column(nullable = false)
     private String topic;
 
-    @Column(name = "description_task")
-    private String description;
+    @Column(nullable = false)
+    private LocalDateTime date_of_creation;
 
-    @Column(name = "date_of_creation", nullable = false, updatable = false)
-    private LocalDateTime dateOfCreation;
-
-    @Column(name = "deadline")
+    @Column(nullable = false)
     private LocalDateTime deadline;
 
+    @Lob
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String description;
 
-    @PrePersist
-    protected void onCreate() {
-        dateOfCreation = LocalDateTime.now();
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    public Task() {
+        this.date_of_creation = LocalDateTime.now();
     }
 
-    public Long getId() {
-        return id;
+    public Task(String topic, LocalDateTime deadline_date, String description, User user) {
+        this.topic = topic;
+        this.date_of_creation = LocalDateTime.now();
+        this.deadline = deadline_date;
+        this.description = description;
+        this.user = user;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
 
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public Integer getId() {
+        return id_task;
     }
 
     public String getTopic() {
         return topic;
     }
 
-    public void setTopic(String topic) {
-        this.topic = topic;
+    public LocalDateTime getCreation_date() {
+        return date_of_creation;
     }
 
-    public LocalDateTime getDateOfCreation() {
-        return dateOfCreation;
-    }
-
-    public void setDateOfCreation(LocalDateTime dateOfCreation) {
-        this.dateOfCreation = dateOfCreation;
-    }
-
-    public LocalDateTime getDeadline() {
+    public LocalDateTime getDeadline_date() {
         return deadline;
-    }
-
-    public void setDeadline(LocalDateTime deadline) {
-        this.deadline = deadline;
     }
 
     public String getDescription() {
         return description;
     }
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setId(Integer id) {
+        this.id_task = id;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
+    }
+
+    public void setCreation_date(LocalDateTime creation_date) {
+        this.date_of_creation = creation_date;
+    }
+
+    public void setDeadline_date(LocalDateTime deadline_date) {
+        this.deadline = deadline_date;
+    }
+
     public void setDescription(String description) {
         this.description = description;
     }
-}
 
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    @Override
+    public String toString() {
+        return "Task{" +
+                "id=" + id_task +
+                ", topic='" + topic + '\'' +
+                ", creation_date=" + date_of_creation +
+                ", deadline_date=" + deadline +
+                ", description='" + description + '\'' +
+                '}';
+    }
+}

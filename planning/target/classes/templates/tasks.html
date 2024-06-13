@@ -72,119 +72,145 @@
             margin: 0 10px;
         }
     </style>
-</head>
-<body>
-<nav>
-    <div class="navbar">
-        <ul>
-            <li><a href="/tasks">My Tasks</a></li>
-            <li><a href="/tasks/new">Create a New Task</a></li>
-            <li><a href="/tasks/all">All Tasks</a></li>
-            <li id="username"></li>
-        </ul>
+    </head>
+    <body>
+    <h1>Tasks</h1>
+    <div th:action="@{main/tasks}" method="post" id="taskList"></div>
+    <button onclick="showTaskForm()">Create New Task</button>
+
+    <div id="taskForm" style="display:none;">
+        <h2 id="formTitle">Create Task</h2>
+        <form id="taskFormDetails">
+            <input type="hidden" id="taskId">
+            <div>
+                <label for="topic">Topic:</label>
+                <input type="text" id="topic" name="topic" required>
+            </div>
+            <div>
+                <label for="deadline">Deadline:</label>
+                <input type="datetime-local" id="deadline" name="deadline" required>
+            </div>
+            <div>
+                <label for="description">Description:</label>
+                <textarea id="description" name="description" required></textarea>
+            </div>
+            <div>
+                <button type="submit">Save</button>
+                <button type="button" onclick="hideTaskForm()">Cancel</button>
+            </div>
+        </form>
     </div>
-</nav>
-<h1>Tasks</h1>
-<div>
-    <a href="/tasks/new">Create New Task</a>
-</div>
-<table id="tasksTable">
-    <thead>
-    <tr>
-        <th>Title</th>
-        <th>Description</th>
-        <th>Creating</th>
-        <th>Deadline</th>
-        <th>Actions</th>
-    </tr>
-    </thead>
-    <tbody>
-    </tbody>
-</table>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script>
-    function fetchTasks() {
-        $.ajax({
-            url: '/tasks',
-            method: 'GET',
-            success: function(tasks) {
-                const tasksTable = $('#tasksTable tbody');
-                tasksTable.empty();
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Deadline</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="task : ${tasks}">
+            <td th:text="${task.id}"></td>
+            <td th:text="${task.title}"></td>
+            <td th:text="${task.description}"></td>
+            <td th:text="${#dates.format(task.deadline, 'yyyy-MM-dd HH:mm')}"></td>
+            <td>
+                <!--<a th:href="@{|/tasks/edit/${task.id}|}">Edit</a>-->
+                <form th:action="@{|/tasks/edit/${task.id}|}" method="post" style="display:inline;">
+                    <button type="submit">Edit</button>
+                </form>
+                <form th:action="@{|/tasks/delete/${task.id}|}" method="post" style="display:inline;">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            loadTasks();
 
-                tasks.forEach(task => {
-                    const row = $('<tr></tr>');
-                    row.append($('<td></td>').text(task.topic));
-                    row.append($('<td></td>').text(task.description_task));
-                    row.append($('<td></td>').text(new Date(task.dateOfCreation).toLocaleString()));
-                    row.append($('<td></td>').text(new Date(task.deadline).toLocaleString()));
-                    const actionsCell = $('<td></td>');
-                    actionsCell.append(`<a href="/tasks/edit?id=${task.id_task}">Edit</a>`);
-                    actionsCell.append(`<button onclick="deleteTask(${task.id_task})">Delete</button>`);
-                    row.append(actionsCell);
-                    tasksTable.append(row);
+            $("#taskFormDetails").submit(function(event) {
+                event.preventDefault();
+                let taskId = $("#taskId").val();
+                let url = taskId ? `/main/tasks/${taskId}` : '/main/tasks';
+                let method = taskId ? 'PUT' : 'POST';
+
+                $.ajax({
+                    type: method,
+                    url: url,
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        topic: $("#topic").val(),
+                        deadline: $("#deadline").val(),
+                        description: $("#description").val()
+                    }),
+                    success: function(response) {
+                        loadTasks();
+                        hideTaskForm();
+                    },
+                    error: function(error) {
+                        alert("Error saving task: " + error.responseText);
+                    }
                 });
-            },
-            error: function(error) {
-                console.error('Error fetching tasks:', error);
-            }
+            });
         });
-    }
 
-    function fetchCurrentUser() {
-        $.ajax({
-            url: 'users/current',
-            method: 'GET',
-            success: function(user) {
-                $('#username').text(user.username);
-            },
-            error: function(error) {
-                console.error('Error fetching current user:', error);
-            }
-        });
-    }
-
-    function deleteTask(id) {
-        $.ajax({
-            url: `/tasks/${id}`,
-            method: 'DELETE',
-            success: function() {
-                fetchTasks();
-            },
-            error: function(error) {
-                console.error('Error deleting task:', error);
-            }
-        });
-    }
-
-    $(document).ready(function() {
-        fetchTasks();
-        fetchCurrentUser();
-    });
-
-</script>
-<script>
-    $(document).ready(function() {
-        $.ajax({
-            url: "/tasks",
-            type: "GET",
-            success: function(data) {
-                const container = $("#tasks-container ul");
-                container.empty();
-                data.forEach(task => {
-                    const taskElement = `
-                            <li>
-                                <h2>${task.title}</h2>
-                                <p>${task.description}</p>
-                            </li>
-                        `;
-                    container.append(taskElement);
+        function loadTasks() {
+            $.get("/main/tasks", function(data) {
+                let taskList = "";
+                $.each(data, function(index, task) {
+                    taskList += `<div>
+                    <h3>${task.topic}</h3>
+                    <p>Deadline: ${task.deadline}</p>
+                    <p>${task.description}</p>
+                    <button onclick="editTask(${task.id})">Edit</button>
+                    <button onclick="deleteTask(${task.id})">Delete</button>
+                </div>`;
                 });
-            },
-            error: function(error) {
-                console.error("Error fetching tasks:", error);
-            }
-        });
-    });
-</script>
-</body>
-</html>
+                $("#taskList").html(taskList);
+            });
+        }
+
+        function showTaskForm() {
+            $("#formTitle").text("Create Task");
+            $("#taskId").val("");
+            $("#topic").val("");
+            $("#deadline").val("");
+            $("#description").val("");
+            $("#taskForm").show();
+        }
+
+        function hideTaskForm() {
+            $("#taskForm").hide();
+        }
+
+        function editTask(taskId) {
+            $.get(`/main/tasks/${taskId}`, function(task) {
+                $("#formTitle").text("Edit Task");
+                $("#taskId").val(task.id);
+                $("#topic").val(task.topic);
+                $("#deadline").val(task.deadline);
+                $("#description").val(task.description);
+                $("#taskForm").show();
+            });
+        }
+
+        function deleteTask(taskId) {
+            $.ajax({
+                type: 'DELETE',
+                url: `/main/tasks/${taskId}`,
+                success: function(response) {
+                    loadTasks();
+                },
+                error: function(error) {
+                    alert("Error deleting task: " + error.responseText);
+                }
+            });
+        }
+    </script>
+    </table>
+    </body>
+    </html>

@@ -1,32 +1,37 @@
 package com.liliia.model;
-import jakarta.persistence.*;
 
+import jakarta.persistence.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
+import java.util.Collection;
+import java.util.*;
 
 @Entity
-@Table(name = "users")
-public class User {
+@Table (name = )
+public class User implements  UserDetails{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_user")
-    private Long id;
+    private Integer id_user;
 
-    @Column(name = "username")
+    @Column(nullable = false)
     private String username;
 
-    @Column(name = "role")
+    @Column(nullable = false)
     private String role;
 
-    @Column(name = "password")
+    @Column(nullable = false)
     private String password;
 
-    @Column(name = "email")
+
+    @Column(nullable = false)
     private String email;
 
-    @Column(name = "date_of_birth")
-    private Date dateOfBirth;
+    @Column(nullable = false)
+    private LocalDate date_of_birth;
 
     @Column(name = "date_of_registration")
     private LocalDateTime dateOfRegistration;
@@ -37,61 +42,99 @@ public class User {
     }
 
 
-    public Long getId() {
-        return id;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Task> tasks;
+
+    public User() {
+
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
+    public User(String name, String password, String role, String email, LocalDate birth_date) {
+        this.username = name;
+        this.password = password;
         this.role = role;
+        this.email = email;
+        this.date_of_birth = birth_date;
+    }
+
+    public Integer getId() {
+        return id_user;
+    }
+
+    public String getName() {
+        return username;
     }
 
     public String getPassword() {
         return password;
     }
 
+    public String getRole() {
+        return role;
+    }
+
+    public String getEmail() { return  email; }
+
+    public LocalDate getBirth_date() { return date_of_birth; }
+
+    public void setId(Integer id) {
+        this.id_user = id;
+    }
+
+    public void setName(String name) {
+        this.username = name;
+    }
+
     public void setPassword(String password) {
         this.password = password;
     }
 
-    public String getEmail() {
-        return email;
+    public void setRole(String role) {
+        this.role = role;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setEmail(String email) { this.email = email; }
+
+    public void setBirthDate(LocalDate birth_date) { this.date_of_birth = birth_date; }
+
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id_user +
+                ", name='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", role='" + role + '\'' +
+                '}';
     }
 
-    public Date getDateOfBirth() {
-        return dateOfBirth;
+    @Override
+    public String getUsername() {
+        return getName();
     }
 
-    public void setDateOfBirth(Date dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.singleton(new SimpleGrantedAuthority("ROLE_" + getRole()));
     }
 
-    public LocalDateTime getDateOfRegistration() {
-        return dateOfRegistration;
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 
-    public void setDateOfRegistration(LocalDateTime dateOfRegistration) {
-        this.dateOfRegistration = dateOfRegistration;
-    }
 }
 
 

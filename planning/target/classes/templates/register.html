@@ -1,10 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" />
-    <title>User Registration</title>
+    <title>Register</title>
     <style>
         body {
             display: flex;
@@ -12,7 +9,7 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #f7f7f7;
+            background-color: #add285;
         }
         form {
             width: 300px;
@@ -48,6 +45,7 @@
         .login-link a {
             color: #045654;
             text-decoration: underline;
+            display: block;
         }
         .error {
             color: #b80000;
@@ -55,29 +53,24 @@
     </style>
 </head>
 <body>
-<h2>User Registration</h2>
-<form th:action="@{/register}" method="post" id="registrationForm">
-    <div class="registration_form">
-        <label for="username">Username:</label><br>
-        <input type="text" id="username" name="username" required><br>
+<form th:action="@{/main/register}" method="post" id="registerForm">
+    <div>
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
     </div>
-    <div class="registration_form">
-        <label for="email">Email:</label><br>
-        <input type="email" id="email" name="email" required><br>
+    <div>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
     </div>
-    <div class="registration_form">
-        <label for="birthDate">Birth Date:</label><br>
-        <input type="date" id="birthDate" name="birthDate" required><br>
+    <div>
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
     </div>
-    <div class="registration_form">
-        <label for="password">Password:</label><br>
-        <input type="password" id="password" name="password" required><br>
+    <div>
+        <label for="dateOfBirth">Date of Birth:</label>
+        <input type="date" id="dateOfBirth" name="dateOfBirth" required>
     </div>
-    <div class="registration_form">
-        <label for="repeatPassword">Repeat Password:</label><br>
-        <input type="password" id="repeatPassword" name="repeatPassword" required><br><br>
-    </div>
-    <div class="registration_form">
+    <div>
         <button type="submit">Register</button>
     </div>
     <div class="login-link">
@@ -88,28 +81,27 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script>
     $(document).ready(function() {
-        $("#registrationForm").submit(function(event) {
+        $("#registerForm").submit(function(event) {
             event.preventDefault();
 
             var formData = {
                 username: $("#username").val(),
-                email: $("#email").val(),
-                birthDate: $("#birthDate").val(),
                 password: $("#password").val(),
-                repeatPassword: $("#repeatPassword").val()
+                email: $("#email").val(),
+                dateOfBirth: $("#dateOfBirth").val()
             };
 
             $.ajax({
                 type: "POST",
-                url: "/register",
-                contentType: "application/json",
+                url: "/main/register",
                 data: JSON.stringify(formData),
+                contentType: "application/json",
                 success: function(response) {
-                    alert("User registered successfully!");
+                    alert("Registration successful!");
                     window.location.href = "/login";
                 },
                 error: function(error) {
-                    alert("Error registering user: " + error.responseText);
+                    alert("Error registering: " + error.responseText);
                 }
             });
         });
